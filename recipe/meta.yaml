@@ -1,31 +1,37 @@
 {% set name = "grpcio-reflection" %}
-{% set version = "1.51.1" %}
+{% set version = "1.66.1" %}
 
 package:
   name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/grpcio-reflection-{{ version }}.tar.gz
-  sha256: c07a93c0c36ef88fe475744289863b4787005eff4de0cc04213ecad718b01aae
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name.replace('-', '_') }}-{{ version }}.tar.gz
+  sha256: dbc39d2ccce82bf13046b145b97bc9542b3b26419a848ae64a5b72634ded14ca
 
 build:
-  noarch: python
-  script: {{ PYTHON }} -m pip install . -vv
   number: 0
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  skip: True  # [py<38]
 
 requirements:
   host:
     - pip
-    - python >=3.6
+    - python
+    - wheel
+    - setuptools
   run:
-    - grpcio ={{ version }}
-    - protobuf >=3.12.0
-    - python >=3.6
+    - grpcio >={{ version }}
+    - protobuf >=5.26.1,<6.0
+    - python
 
 test:
+  source_files:
+    # checked grpc version in run_test.py
+    - grpc_version.py
   imports:
     - grpc_reflection
+    - grpc_reflection.v1alpha.reflection
   commands:
     - pip check
   requires:
@@ -35,7 +41,13 @@ about:
   home: https://grpc.io
   summary: Standard Protobuf Reflection Service for gRPC
   license: Apache-2.0
+  license_family: Apache
   license_file: LICENSE
+  description: |
+    https://grpc.github.io/grpc/python/grpc_reflection.html is documentation for gRPC's reflection service implementation in Python.
+    gRPC reflection is a feature that allows clients to dynamically query a gRPC server about its available services, methods, and message types at runtime.
+  dev_url: https://github.com/grpc/grpc/tree/master/src/python/grpcio_reflection
+  doc_url: https://grpc.github.io/grpc/python/grpc_reflection.html
 
 extra:
   recipe-maintainers:
